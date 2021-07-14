@@ -1,0 +1,48 @@
+name: rabbitmq-server-snap
+base: core18
+version: '3.6.14'
+summary: AMQP server written in Erlang
+description: |
+  RabbitMQ is an implementation of AMQP, the emerging standard for
+  high performance enterprise messaging. The RabbitMQ server is a
+  robust and scalable implementation of an AMQP broker.
+architectures:
+  - build-on: amd64
+grade: devel
+confinement: devmode
+
+apps:
+  rabbitmq-server:
+    command: usr/lib/erlang/lib/rabbitmq_server-3.6.14/sbin/rabbitmq-server
+
+parts:
+  rabbitmq-server:
+    plugin: make
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_14/rabbitmq-server_3.6.14.orig.tar.xz
+    build-packages:
+      - erlang-dev
+      - erlang-nox
+      - erlang-src
+      - git
+      - python-all
+      - python-simplejson
+      - rsync
+      - unzip
+      - xmlto
+      - xsltproc
+      - zip
+    stage-packages:
+      - adduser
+      - erlang-nox
+      - logrotate
+      - lsb-base
+      - socat
+    override-build: |
+      export DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      export PREFIX=/usr
+      export PYTHON=python3
+      export V=1
+
+      make V=1
+      make install
+      make install-bin
