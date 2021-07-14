@@ -6,10 +6,11 @@ description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
   high performance enterprise messaging. The RabbitMQ server is a
   robust and scalable implementation of an AMQP broker.
+license: Apache-2.0
 architectures:
   - build-on: amd64
 grade: devel
-confinement: devmode
+confinement: strict
 
 apps:
   rabbitmq-server:
