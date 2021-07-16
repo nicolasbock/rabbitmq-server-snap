@@ -15,6 +15,7 @@ confinement: strict
 apps:
   rabbitmq-server:
     command: usr/lib/erlang/bin/rabbitmq-server
+    daemon: simple
 
 parts:
   rabbitmq-server:
