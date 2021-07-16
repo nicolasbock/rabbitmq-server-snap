@@ -19,6 +19,8 @@ apps:
   rabbitmq-server:
     command: usr/lib/erlang/bin/rabbitmq-server
     daemon: simple
+  rabbitmqctl:
+    command: usr/lib/erlang/bin/rabbitmqctl
 
 parts:
   rabbitmq-server:
