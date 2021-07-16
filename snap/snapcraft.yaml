@@ -8,7 +8,7 @@ description: |
   robust and scalable implementation of an AMQP broker.
 license: Apache-2.0
 architectures:
-  - build-on: amd64
+  - build-on: [amd64, i386]
 grade: devel
 confinement: strict
 
