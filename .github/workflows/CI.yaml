@@ -1,0 +1,25 @@
+---
+
+name: CI
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v2
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+      - name: Store snap artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: snap
+          path: ${{ steps.snapcraft.outputs.snap }}
