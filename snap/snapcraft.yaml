@@ -13,12 +13,11 @@ grade: devel
 confinement: strict
 
 environment:
-  RABBITMQ_HOME: ${SNAP_COMMON}
+  RABBITMQ_CONF_ENV_FILE: /etc/rabbitmq
 
 apps:
   rabbitmq-server:
     command: usr/lib/erlang/bin/rabbitmq-server
-    daemon: simple
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -45,12 +44,17 @@ parts:
       - lsb-base
       - socat
     override-build: |
+      set -e -u -x
+
       export DESTDIR=${SNAPCRAFT_PART_INSTALL}
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
 
-      make V=1
+      # Patch sources
+      # patch -p1 < paths.diff
+
+      make
       make install
       make install-bin
 
@@ -58,4 +62,5 @@ parts:
     plugin: dump
     source: .
     organize:
+      rabbitmq-env: /etc/rabbitmq/
       rabbitmq-server.service: /lib/systemd/system/
