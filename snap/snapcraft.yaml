@@ -47,3 +47,9 @@ parts:
       make V=1
       make install
       make install-bin
+
+  rabbitmq-server-service:
+    plugin: dump
+    source: .
+    organize:
+      rabbitmq-server.service: /lib/systemd/system/
