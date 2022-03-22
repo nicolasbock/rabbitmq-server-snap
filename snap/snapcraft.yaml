@@ -13,7 +13,7 @@ grade: devel
 confinement: strict
 
 environment:
-  RABBITMQ_CONF_ENV_FILE: /etc/rabbitmq
+  RABBITMQ_CONF_ENV_FILE: /etc/rabbitmq/rabbitmq-env
 
 apps:
   rabbitmq-server:
@@ -23,6 +23,7 @@ apps:
 
 parts:
   rabbitmq-server:
+    after: [rabbitmq-server-patches]
     plugin: make
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_14/rabbitmq-server_3.6.14.orig.tar.xz
     build-packages:
@@ -52,15 +53,23 @@ parts:
       export V=1
 
       # Patch sources
-      # patch -p1 < paths.diff
+      patch -p1 < ${SNAPCRAFT_STAGE}/patches/0001-Set-correct-paths.patch
 
       make
       make install
       make install-bin
 
+  rabbitmq-server-patches:
+    plugin: dump
+    source: patches
+    override-build: |
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/patches
+      cp *.patch ${SNAPCRAFT_PART_INSTALL}/patches
+    override-prime: ""
+
   rabbitmq-server-service:
     plugin: dump
-    source: .
+    source: assets
     organize:
       rabbitmq-env: /etc/rabbitmq/
       rabbitmq-server.service: /lib/systemd/system/
