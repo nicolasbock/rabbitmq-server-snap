@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core18
-version: '3.6.14'
+version: &version '3.6.14'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -9,7 +9,7 @@ description: |
 license: Apache-2.0
 architectures:
   - build-on: [amd64, i386, arm64]
-grade: devel
+grade: stable
 confinement: strict
 
 environment:
@@ -17,7 +17,11 @@ environment:
 
 apps:
   rabbitmq-server:
+    daemon: notify
+    restart-condition: on-failure
+    restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -53,7 +57,7 @@ parts:
       export V=1
 
       # Patch sources
-      patch -p1 < ${SNAPCRAFT_STAGE}/patches/0001-Set-correct-paths.patch
+      ${SNAPCRAFT_STAGE}/0001-Set-correct-paths.patch | patch -p1
 
       make
       make install
@@ -62,14 +66,15 @@ parts:
   rabbitmq-server-patches:
     plugin: dump
     source: patches
-    override-build: |
-      mkdir -p ${SNAPCRAFT_PART_INSTALL}/patches
-      cp *.patch ${SNAPCRAFT_PART_INSTALL}/patches
-    override-prime: ""
 
-  rabbitmq-server-service:
+  rabbitmq-support:
     plugin: dump
     source: assets
     organize:
-      rabbitmq-env: /etc/rabbitmq/
-      rabbitmq-server.service: /lib/systemd/system/
+      rabbitmq-env: etc/rabbitmq/rabbitmq-env
+      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
+      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
+    stage:
+     - etc/rabbitmq/rabbitmq-env
+     - etc/rabbitmq/rabbitmq-defaults
+     - lib/systemd/system/rabbitmq-server.service
