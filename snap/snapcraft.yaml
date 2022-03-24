@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core18
-version: &version '3.6.14'
+version: '3.6.14'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -14,16 +14,19 @@ confinement: strict
 
 environment:
   RABBITMQ_CONF_ENV_FILE: /etc/rabbitmq/rabbitmq-env
+  ERL_DIR: ${SNAP}/usr/lib
 
 apps:
   rabbitmq-server:
-    daemon: notify
-    restart-condition: on-failure
-    restart-delay: 10s
+    # daemon: notify
+    # restart-condition: on-failure
+    # restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    # stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
+  rabbit-env:
+    command: usr/bin/snap-env
 
 parts:
   rabbitmq-server:
@@ -57,11 +60,14 @@ parts:
       export V=1
 
       # Patch sources
-      ${SNAPCRAFT_STAGE}/0001-Set-correct-paths.patch | patch -p1
+      (cd deps/rabbit; \
+        cat ${SNAPCRAFT_STAGE}/0001-Set-correct-paths.patch | patch -p1)
 
       make
       make install
       make install-bin
+
+      sed -i -e "s:^ERL_DIR=.*:ERL_DIR=${SNAP}:" ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/rabbitmq-defaults
 
   rabbitmq-server-patches:
     plugin: dump
@@ -78,3 +84,9 @@ parts:
      - etc/rabbitmq/rabbitmq-env
      - etc/rabbitmq/rabbitmq-defaults
      - lib/systemd/system/rabbitmq-server.service
+
+  rabbitmq-env:
+    plugin: dump
+    source: .
+    organize:
+      env.sh: usr/bin/snap-env
