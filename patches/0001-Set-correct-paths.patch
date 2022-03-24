@@ -1,0 +1,26 @@
+From 167c7325793031af515cdf856372156b4033babe Mon Sep 17 00:00:00 2001
+From: Nicolas Bock <nicolas.bock@canonical.com>
+Date: Fri, 16 Jul 2021 11:23:53 +0200
+Subject: [PATCH] Set correct paths
+
+Signed-off-by: Nicolas Bock <nicolas.bock@canonical.com>
+---
+ scripts/rabbitmqctl | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/scripts/rabbitmqctl b/scripts/rabbitmqctl
+index 2336c3d466..d130fb2518 100755
+--- a/scripts/rabbitmqctl
++++ b/scripts/rabbitmqctl
+@@ -24,6 +24,8 @@ if [ -z "$ERL_CRASH_DUMP_SECONDS" ]; then
+     export ERL_CRASH_DUMP_SECONDS=0
+ fi
+ 
++echo "ERL_DIR = ${ERL_DIR}"
++
+ # We specify Mnesia dir and sasl error logger since some actions
+ # (e.g. forget_cluster_node --offline) require us to impersonate the
+ # real node.
+-- 
+2.31.1
+
