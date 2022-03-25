@@ -30,7 +30,6 @@ apps:
 
 parts:
   rabbitmq-server:
-    after: [rabbitmq-server-patches]
     plugin: make
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_14/rabbitmq-server_3.6.14.orig.tar.xz
     build-packages:
@@ -69,7 +68,7 @@ parts:
 
       sed -i -e "s:^ERL_DIR=.*:ERL_DIR=${SNAP}:" ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/rabbitmq-defaults
 
-  rabbitmq-server-patches:
+  rabbitmq-patches:
     plugin: dump
     source: patches
 
