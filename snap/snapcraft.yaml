@@ -38,8 +38,9 @@ parts:
       - elixir
       - erlang
     plugin: make
-    source: https://github.com/rabbitmq/rabbitmq-server.git
-    source-tag: rabbitmq_v3_6_10
+    # source: https://github.com/rabbitmq/rabbitmq-server.git
+    # source-tag: rabbitmq_v3_6_10
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
     build-packages:
       - git
       - curl
@@ -60,7 +61,7 @@ parts:
       set -e -u -x
 
       # Create branch
-      git checkout -b buildbranch
+      # git checkout -b buildbranch
 
       env | sort
 
@@ -71,7 +72,7 @@ parts:
 
       sed --in-place \
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
-        scripts/rabbitmq-defaults
+        deps/rabbit/scripts/rabbitmq-defaults
 
       make dist manpages
       
