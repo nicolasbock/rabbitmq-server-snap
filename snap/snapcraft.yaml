@@ -42,6 +42,7 @@ parts:
     source-tag: rabbitmq_v3_6_10
     build-packages:
       - git
+      - curl
       - python-all
       - python-simplejson
       - rsync
