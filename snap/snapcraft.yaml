@@ -47,13 +47,11 @@ parts:
     # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
     build-packages:
-      - git
       - curl
       - python-all
       - python-simplejson
       - rsync
       - unzip
-      - wget
       - xmlto
       - xsltproc
       - zip
@@ -107,8 +105,6 @@ parts:
     source: https://github.com/erlang/otp.git
     source-tag: OTP-20.2.2
     build-packages:
-      - g++
-      - make
       - libssl-dev
       - libncurses-dev
     stage-packages:
