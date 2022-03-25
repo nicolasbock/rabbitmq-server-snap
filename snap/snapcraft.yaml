@@ -94,7 +94,7 @@ parts:
   erlang:
     plugin: autotools
     source: https://github.com/erlang/otp.git
-    source-tag: OTP-21.0
+    source-tag: OTP-20.2.2
     build-packages:
       - g++
       - make
