@@ -80,7 +80,7 @@ parts:
       - erlang
     plugin: make
     source: https://github.com/elixir-lang/elixir.git
-    source-tag: v1.10.0
+    source-tag: v1.3.3
     override-build: |
       set -e -u -x
 
