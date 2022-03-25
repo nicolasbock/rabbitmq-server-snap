@@ -33,11 +33,14 @@ parts:
      - etc/rabbitmq/rabbitmq-defaults
      - lib/systemd/system/rabbitmq-server.service
 
-# Known combinations:
-# erlang>=13.b.3
-# elixir==1.3.3
-# rabbitmq-server==3.6.10
+  # Known combinations:
+  # erlang>=13.b.3
+  # elixir==1.3.3
+  # rabbitmq-server==3.6.10
 
+  # Building from git fails because the build script downloads other repositories in
+  # `deps` and uses the `master` branch of them. This leads to build failures because
+  # the erlang version is not recent enough.
   rabbitmq-server:
     after:
       - elixir
@@ -63,7 +66,8 @@ parts:
     override-build: |
       set -e -u -x
 
-      # Create branch
+      # Create branch when checking out from git. Without a branch the build script
+      # will fail.
       # git checkout -b buildbranch
 
       env | sort
