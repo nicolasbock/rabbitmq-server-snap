@@ -58,12 +58,13 @@ parts:
     override-build: |
       set -e -u -x
 
+
+      env | sort
+
       export DESTDIR=${SNAPCRAFT_PART_INSTALL}
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
-
-      export PATH=${PATH}:${SNAPCRAFT_STAGE}/usr/bin
 
       sed --in-place \
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
@@ -83,7 +84,7 @@ parts:
     override-build: |
       set -e -u -x
 
-      export PATH=${PATH}:${SNAPCRAFT_STAGE}/usr/bin
+      env | sort
 
       make clean
       make compile
@@ -104,10 +105,16 @@ parts:
       - openssl
       - ncurses-base
     override-build: |
+      set -e -u -x
+
+      env | sort
+
       ./otp_build autoconf
       ./configure --prefix=/usr
+
       make
       make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
+
       sed --in-place \
         --expression 's:^ROOTDIR.*:ROOTDIR=$(readlink --canonicalize $(dirname $0))/../lib/erlang:' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
