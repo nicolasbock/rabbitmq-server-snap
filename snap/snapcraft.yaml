@@ -91,7 +91,7 @@ parts:
       - erlang
     plugin: make
     source: https://github.com/elixir-lang/elixir.git
-    source-tag: v1.3.3
+    source-tag: v1.4.5
     override-build: |
       set -e -u -x
 
@@ -107,7 +107,7 @@ parts:
   erlang:
     plugin: autotools
     source: https://github.com/erlang/otp.git
-    source-tag: OTP-20.2.2
+    source-tag: OTP-20.3.8.26
     build-packages:
       - libssl-dev
       - libncurses-dev
