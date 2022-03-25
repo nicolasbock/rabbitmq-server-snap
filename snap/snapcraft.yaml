@@ -14,7 +14,7 @@ confinement: strict
 
 apps:
   rabbitmq-server:
-    daemon: notify
+    daemon: simple
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
