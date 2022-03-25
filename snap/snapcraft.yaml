@@ -59,6 +59,8 @@ parts:
     override-build: |
       set -e -u -x
 
+      # Create branch
+      git checkout -b buildbranch
 
       env | sort
 
