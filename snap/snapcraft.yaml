@@ -14,11 +14,11 @@ confinement: strict
 
 apps:
   rabbitmq-server:
-    # daemon: notify
-    # restart-condition: on-failure
-    # restart-delay: 10s
+    daemon: notify
+    restart-condition: on-failure
+    restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    # stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
