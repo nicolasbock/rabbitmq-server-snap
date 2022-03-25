@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core18
-version: '3.6.14'
+version: '3.6.10'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -12,31 +12,42 @@ architectures:
 grade: stable
 confinement: strict
 
-environment:
-  RABBITMQ_CONF_ENV_FILE: /etc/rabbitmq/rabbitmq-env
-  ERL_DIR: ${SNAP}/usr/lib
-
 apps:
   rabbitmq-server:
-    # daemon: notify
-    # restart-condition: on-failure
-    # restart-delay: 10s
+    daemon: simple
+    restart-condition: on-failure
+    restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    # stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
-  rabbit-env:
-    command: usr/bin/snap-env
 
 parts:
+  rabbitmq-support:
+    plugin: dump
+    source: assets
+    organize:
+      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
+      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
+    stage:
+     - etc/rabbitmq/rabbitmq-defaults
+     - lib/systemd/system/rabbitmq-server.service
+
+# Known combinations:
+# erlang>=13.b.3
+# elixir==1.3.3
+# rabbitmq-server==3.6.10
+
   rabbitmq-server:
+    after:
+      - elixir
+      - erlang
     plugin: make
-    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_14/rabbitmq-server_3.6.14.orig.tar.xz
+    # source: https://github.com/rabbitmq/rabbitmq-server.git
+    # source-tag: rabbitmq_v3_6_10
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
     build-packages:
-      - erlang-dev
-      - erlang-nox
-      - erlang-src
-      - git
+      - curl
       - python-all
       - python-simplejson
       - rsync
@@ -46,46 +57,72 @@ parts:
       - zip
     stage-packages:
       - adduser
-      - erlang-nox
       - logrotate
       - lsb-base
       - socat
     override-build: |
       set -e -u -x
 
+      # Create branch
+      # git checkout -b buildbranch
+
+      env | sort
+
       export DESTDIR=${SNAPCRAFT_PART_INSTALL}
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
 
-      # Patch sources
-      (cd deps/rabbit; \
-        cat ${SNAPCRAFT_STAGE}/0001-Set-correct-paths.patch | patch -p1)
+      sed --in-place \
+        --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
+        deps/rabbit/scripts/rabbitmq-defaults
 
-      make
+      make dist manpages
+      
       make install
       make install-bin
 
-      sed -i -e "s:^ERL_DIR=.*:ERL_DIR=${SNAP}:" ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/rabbitmq-defaults
+  elixir:
+    after:
+      - erlang
+    plugin: make
+    source: https://github.com/elixir-lang/elixir.git
+    source-tag: v1.3.3
+    override-build: |
+      set -e -u -x
 
-  rabbitmq-patches:
-    plugin: dump
-    source: patches
+      env | sort
 
-  rabbitmq-support:
-    plugin: dump
-    source: assets
-    organize:
-      rabbitmq-env: etc/rabbitmq/rabbitmq-env
-      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
-      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
+      make clean
+      make compile
+      # make test
+      make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
     stage:
-     - etc/rabbitmq/rabbitmq-env
-     - etc/rabbitmq/rabbitmq-defaults
-     - lib/systemd/system/rabbitmq-server.service
+      - usr
 
-  rabbitmq-env:
-    plugin: dump
-    source: .
-    organize:
-      env.sh: usr/bin/snap-env
+  erlang:
+    plugin: autotools
+    source: https://github.com/erlang/otp.git
+    source-tag: OTP-20.2.2
+    build-packages:
+      - libssl-dev
+      - libncurses-dev
+    stage-packages:
+      - openssl
+      - ncurses-base
+    override-build: |
+      set -e -u -x
+
+      env | sort
+
+      ./otp_build autoconf
+      ./configure --prefix=/usr
+
+      make
+      make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
+
+      sed --in-place \
+        --expression 's:^ROOTDIR.*:ROOTDIR=$(readlink --canonicalize $(dirname $0))/../lib/erlang:' \
+        ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
+    stage:
+      - usr
