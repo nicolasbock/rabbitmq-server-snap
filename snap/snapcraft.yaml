@@ -97,6 +97,7 @@ parts:
 
       make clean
       make compile
+      # make test
       make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
     stage:
       - usr
