@@ -114,6 +114,7 @@ parts:
     stage-packages:
       - openssl
       - ncurses-base
+      - libncurses5
     override-build: |
       set -e -u -x
 
