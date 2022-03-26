@@ -18,6 +18,15 @@ jobs:
       - name: Build snap
         uses: snapcore/action-build@v1
         id: snapcraft
+      - name: Install rabbitmq-server snap
+        run: |
+          sudo snap install --devmode ./rabbitmq-server-snap_3.6.10_multi.snap
+      - name: Test whether rabbitmq-server starts
+        run: sudo snap services rabbitmq-server-snap
+      - name: Check server logs
+        run: sudo snap logs rabbitmq-server-snap.rabbitmq-server
+      - name: Check cluster status
+        run: sudo rabbitmq-server-snap.rabbitmqctl cluster_status
       - name: Store snap artifact
         uses: actions/upload-artifact@v2
         with:
