@@ -63,6 +63,7 @@ parts:
       - logrotate
       - lsb-base
       - socat
+      - libtinfo5
     override-build: |
       set -e -u -x
 
@@ -115,6 +116,7 @@ parts:
       - openssl
       - ncurses-base
       - libncurses5
+      - libtinfo5
     override-build: |
       set -e -u -x
 
