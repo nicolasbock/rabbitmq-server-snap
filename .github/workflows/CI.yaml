@@ -11,7 +11,10 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out sources
         uses: actions/checkout@v2
@@ -25,8 +28,20 @@ jobs:
         run: sudo snap services rabbitmq-server-snap
       - name: Check server logs
         run: sudo snap logs rabbitmq-server-snap.rabbitmq-server
+      - name: Check whether process is running
+        run: pgrep -alf bin/rabbitmq-server
       - name: Check cluster status
-        run: sudo rabbitmq-server-snap.rabbitmqctl cluster_status
+        run: |
+          set -e -u -x
+          success=0
+          for i in $(seq 10); do
+            if sudo rabbitmq-server-snap.rabbitmqctl cluster_status; then
+              success=1
+              break
+            fi
+            sleep 2
+          done
+          (( ${success} == 1 ))
       - name: Store snap artifact
         uses: actions/upload-artifact@v2
         with:
