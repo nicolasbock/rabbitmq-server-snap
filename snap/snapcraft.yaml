@@ -17,14 +17,18 @@ apps:
     daemon: simple
     plugs:
       - network
-      - network-bind
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
     stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
+    plugs:
+      - network
     command: usr/lib/erlang/bin/rabbitmqctl
-
+  epmd:
+    plugs:
+      - network-bind
+    command: usr/lib/erlang/bin/epmd
 parts:
   rabbitmq-support:
     plugin: dump
