@@ -35,7 +35,7 @@ plugs:
 
 apps:
   rabbitmq-server:
-    daemon: simple
+    daemon: notify
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
