@@ -24,10 +24,39 @@ jobs:
       - name: Install rabbitmq-server snap
         run: |
           sudo snap install --devmode ./rabbitmq-server-snap_3.6.10_multi.snap
-      - name: Test whether rabbitmq-server starts
-        run: sudo snap services rabbitmq-server-snap
+      - name: Wait for rabbitmq-server to start
+        run: |
+          set -e -u -x
+          success=0
+          for i in $(seq 10); do
+            if sudo snap services rabbitmq-server-snap | grep --quiet enabled; then
+              success=1
+              break
+            fi
+            sleep 2
+          done
+          (( ${success} == 1 ))
+          success=0
+          for i in $(seq 10); do
+            if sudo snap services rabbitmq-server-snap | grep --quiet active; then
+              success=1
+              break
+            fi
+            sleep 2
+          done
+          (( ${success} == 1 ))
       - name: Check server logs
-        run: sudo snap logs rabbitmq-server-snap.rabbitmq-server
+        run: |
+          set -e -u -x
+          success=0
+          for i in $(seq 10); do
+            if sudo snap logs rabbitmq-server-snap.rabbitmq-server | grep --quiet "Starting broker"; then
+              success=1
+              break
+            fi
+            sleep 2
+          done
+          (( ${success} == 1 ))
       - name: Check whether process is running
         run: pgrep -alf bin/rabbitmq-server
       - name: Check cluster status
