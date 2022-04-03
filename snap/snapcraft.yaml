@@ -92,6 +92,38 @@ parts:
       make install
       make install-bin
 
+      # if ! getent group rabbitmq >/dev/null; then
+        # addgroup --system rabbitmq
+      # fi
+
+      # create rabbitmq user
+      # if ! getent passwd rabbitmq >/dev/null; then
+      #   adduser --system \
+      #     --ingroup rabbitmq \
+      #     --home ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq \
+      #     --no-create-home \
+      #     --gecos "RabbitMQ messaging server" \
+      #     --disabled-login rabbitmq
+      # fi
+
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq
+      # chown rabbitmq:rabbitmq /etc/rabbitmq
+      if [ -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq.conf ] && [ ! -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ]; then
+        mv ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq.conf ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
+        # chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq-env.conf
+      fi
+      if [ -r ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf ] && ! [ -e ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ] ; then
+        install -m 0644 -o rabbitmq -g rabbitmq ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
+      fi
+      if [ -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/enabled_plugins ] ; then
+        chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
+      fi
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq/mnesia
+      chmod 750 ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq/mnesia
+      chmod -R o-rwx,g-w ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq/mnesia
+      # chown -R rabbitmq:rabbitmq ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq
+      # chown -R rabbitmq:rabbitmq ${SNAPCRAFT_PART_INSTALL}/var/log/rabbitmq
+
   elixir:
     after:
       - erlang
