@@ -6,6 +6,10 @@ description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
   high performance enterprise messaging. The RabbitMQ server is a
   robust and scalable implementation of an AMQP broker.
+source-code: https://github.com/nicolasbock/rabbitmq-server-snap
+website: https://github.com/nicolasbock/rabbitmq-server-snap
+issues: https://github.com/nicolasbock/rabbitmq-server-snap/issues
+contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
 architectures:
