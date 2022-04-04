@@ -29,17 +29,22 @@ grade: stable
 confinement: strict
 
 plugs:
+  home:
   log-observe:
   mount-observe:
   network-bind:
 
 apps:
+  # rabbitmq-server:
+  #   daemon: simple
+  #   restart-condition: on-failure
+  #   restart-delay: 10s
+  #   command: usr/lib/erlang/bin/rabbitmq-server
+  #   stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmq-server:
-    daemon: simple
-    restart-condition: on-failure
-    restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    environment:
+      RABBITMQ_CONF_ENV_FILE: ${SNAP}/etc/rabbitmq/rabbitmq-env.config
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -48,11 +53,9 @@ parts:
     plugin: dump
     source: assets
     organize:
-      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
-      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
+      rabbitmq-env.config: etc/rabbitmq/rabbitmq-env.config
     stage:
-      - etc/rabbitmq/rabbitmq-defaults
-      - lib/systemd/system/rabbitmq-server.service
+      - etc
 
   # Building rabbitmq-server from git fails because the build script downloads other
   # repositories in `deps` and uses the `master` branch of them. This leads to build
