@@ -51,8 +51,6 @@ parts:
       - elixir
       - erlang
     plugin: make
-    # source: https://github.com/rabbitmq/rabbitmq-server.git
-    # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
     build-packages:
       - curl
@@ -88,7 +86,6 @@ parts:
         deps/rabbit/scripts/rabbitmq-defaults
 
       make dist manpages
-      
       make install
       make install-bin
 
@@ -108,15 +105,19 @@ parts:
 
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq
       # chown rabbitmq:rabbitmq /etc/rabbitmq
-      if [ -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq.conf ] && [ ! -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ]; then
+      if [ -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq.conf ] \
+        && [ ! -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ]; then
         mv ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq.conf ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
-        # chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq-env.conf
+        # chown rabbitmq:rabbitmq ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
       fi
-      if [ -r ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf ] && ! [ -e ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ] ; then
-        install -m 0644 -o rabbitmq -g rabbitmq ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
+      if [ -r ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf ] \
+        && ! [ -e ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf ] ; then
+        install -m 0644 -o rabbitmq -g rabbitmq \
+          ${SNAPCRAFT_PART_INSTALL}/usr/share/rabbitmq/rabbitmq-env.conf \
+          ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/rabbitmq-env.conf
       fi
       if [ -f ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/enabled_plugins ] ; then
-        chown rabbitmq:rabbitmq /etc/rabbitmq/enabled_plugins
+        chown rabbitmq:rabbitmq ${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq/enabled_plugins
       fi
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq/mnesia
       chmod 750 ${SNAPCRAFT_PART_INSTALL}/var/lib/rabbitmq/mnesia
