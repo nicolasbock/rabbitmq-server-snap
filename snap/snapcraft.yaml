@@ -36,6 +36,7 @@ apps:
       - network
       - network-bind
     command: usr/lib/erlang/bin/epmd
+
 parts:
   rabbitmq-support:
     plugin: dump
@@ -44,8 +45,8 @@ parts:
       rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
       rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
     stage:
-     - etc/rabbitmq/rabbitmq-defaults
-     - lib/systemd/system/rabbitmq-server.service
+      - etc/rabbitmq/rabbitmq-defaults
+      - lib/systemd/system/rabbitmq-server.service
 
   # Building rabbitmq-server from git fails because the build script downloads other
   # repositories in `deps` and uses the `master` branch of them. This leads to build
@@ -69,10 +70,11 @@ parts:
       - zip
     stage-packages:
       - adduser
+      - coreutils
+      - libtinfo5
       - logrotate
       - lsb-base
       - socat
-      - libtinfo5
     override-build: |
       set -e -u -x
 
@@ -138,7 +140,7 @@ parts:
       make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
 
       sed --in-place \
-        --expression 's:^ROOTDIR.*:ROOTDIR=$(readlink --canonicalize $(dirname $0))/../lib/erlang:' \
+        --expression 's:^\(ROOTDIR\).*:\1=$(readlink --canonicalize $(dirname $0))/../lib/erlang:' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
     stage:
       - usr
