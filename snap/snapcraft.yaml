@@ -82,8 +82,6 @@ parts:
       # will fail.
       # git checkout -b buildbranch
 
-      env | sort
-
       export DESTDIR=${SNAPCRAFT_PART_INSTALL}
       export PREFIX=/usr
       export PYTHON=python3
