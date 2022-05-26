@@ -19,14 +19,14 @@ confinement: strict
 
 apps:
   rabbitmq-server:
-    daemon: simple
+    command: usr/lib/erlang/bin/rabbitmq-server
     plugs:
       - network
       - network-bind
-    restart-condition: on-failure
-    restart-delay: 10s
-    command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    #daemon: simple
+    #restart-condition: on-failure
+    #restart-delay: 10s
+    #stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     plugs:
       - network
