@@ -71,6 +71,11 @@ jobs:
             sleep 2
           done
           (( ${success} == 1 ))
+      - name: Check queues
+        run: |
+          set -e -u -x
+
+          sudo pip install RabbitMQ-Test-Tool
       - name: Store snap artifact
         uses: actions/upload-artifact@v2
         with:
