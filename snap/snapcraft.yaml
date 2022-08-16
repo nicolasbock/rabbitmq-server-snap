@@ -102,6 +102,7 @@ parts:
     plugin: make
     source: https://github.com/elixir-lang/elixir.git
     source-tag: v1.5.3
+    source-depth: 1
     override-build: |
       set -e -u -x
 
@@ -118,6 +119,7 @@ parts:
     plugin: autotools
     source: https://github.com/erlang/otp.git
     source-tag: OTP-20.3.8.26
+    source-depth: 1
     build-packages:
       - libssl-dev
       - libncurses-dev
