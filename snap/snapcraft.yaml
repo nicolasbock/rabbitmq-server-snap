@@ -1,5 +1,5 @@
 name: rabbitmq-server-snap
-base: core18
+base: core20
 version: '3.6.10'
 summary: AMQP server written in Erlang
 description: |
@@ -121,6 +121,7 @@ parts:
     build-packages:
       - libssl-dev
       - libncurses-dev
+      - fop
     stage-packages:
       - openssl
       - ncurses-base
