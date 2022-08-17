@@ -28,25 +28,20 @@ architectures:
 grade: stable
 confinement: strict
 
+plugs:
+  log-observe:
+  mount-observe:
+  network-bind:
+
 apps:
   rabbitmq-server:
     daemon: simple
-    plugs:
-      - network
-      - network-bind
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
     stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
-    plugs:
-      - network
     command: usr/lib/erlang/bin/rabbitmqctl
-  epmd:
-    plugs:
-      - network
-      - network-bind
-    command: usr/lib/erlang/bin/epmd
 
 parts:
   rabbitmq-support:
@@ -62,6 +57,8 @@ parts:
   # Building rabbitmq-server from git fails because the build script downloads other
   # repositories in `deps` and uses the `master` branch of them. This leads to build
   # failures because the Erlang version is not recent enough.
+  #
+  # RabbitMQ dependencies: https://www.rabbitmq.com/which-erlang.html
   rabbitmq-server:
     after:
       - elixir
@@ -89,9 +86,10 @@ parts:
     override-build: |
       set -e -u -x
 
-      # Create branch when checking out from git. Without a branch the build script
-      # will fail.
-      # git checkout -b buildbranch
+      echo "Starting at $(date)"
+      START_TIME=$(date +%s)
+
+      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
       export DESTDIR=${SNAPCRAFT_PART_INSTALL}
       export PREFIX=/usr
@@ -102,10 +100,14 @@ parts:
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make dist manpages
+      make -j ${CPU_COUNT} dist manpages
       
       make install
       make install-bin
+
+      echo "Finished at $(date)"
+      END_TIME=$(date +%s)
+      echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
 
   elixir:
     after:
@@ -117,12 +119,17 @@ parts:
     override-build: |
       set -e -u -x
 
-      env | sort
+      echo "Starting at $(date)"
+      START_TIME=$(date +%s)
 
-      make clean
-      make compile
-      # make test
+      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
+
+      make -j ${CPU_COUNT} clean test
       make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
+
+      echo "Finished at $(date)"
+      END_TIME=$(date +%s)
+      echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
     stage:
       - usr
 
@@ -132,8 +139,12 @@ parts:
     source-tag: OTP-20.3.8.26
     source-depth: 1
     build-packages:
+      - fop
       - libssl-dev
-      - libncurses-dev
+      - libncurses5-dev
+      - libwxbase3.0-dev
+      - libxml2-utils
+      - xsltproc
     stage-packages:
       - openssl
       - ncurses-base
@@ -142,16 +153,37 @@ parts:
     override-build: |
       set -e -u -x
 
-      env | sort
+      echo "Starting at $(date)"
+      START_TIME=$(date +%s)
+
+      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
       ./otp_build autoconf
-      ./configure --prefix=/usr
+      ./configure --prefix=/usr 2>&1 | tee /root/configure.log
 
-      make
-      make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      make -j ${CPU_COUNT} 2>&1 | tee /root/make.log
+      make install DESTDIR=${SNAPCRAFT_PART_INSTALL} 2>&1 | tee /root/make-install.log
 
       sed --in-place \
-        --expression 's:^\(ROOTDIR\).*:\1=$(readlink --canonicalize $(dirname $0))/../lib/erlang:' \
+        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
+      sed --in-place \
+        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/start
+      sed --in-place \
+        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/erl
+      sed --in-place \
+        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/start
+      sed --in-place \
+        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
+
+      echo "Finished at $(date)"
+      END_TIME=$(date +%s)
+      echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
     stage:
+      - etc
+      - lib
       - usr
