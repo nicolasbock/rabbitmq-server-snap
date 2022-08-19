@@ -124,7 +124,9 @@ parts:
 
       CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
-      make -j ${CPU_COUNT} clean test
+      make clean
+      make -j ${CPU_COUNT}
+      # make -j ${CPU_COUNT} test
       make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
 
       echo "Finished at $(date)"
@@ -159,10 +161,10 @@ parts:
       CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
       ./otp_build autoconf
-      ./configure --prefix=/usr 2>&1 | tee /root/configure.log
+      ./configure --prefix=/usr
 
-      make -j ${CPU_COUNT} 2>&1 | tee /root/make.log
-      make install DESTDIR=${SNAPCRAFT_PART_INSTALL} 2>&1 | tee /root/make-install.log
+      make -j ${CPU_COUNT}
+      make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
 
       sed --in-place \
         --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
