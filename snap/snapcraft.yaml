@@ -63,7 +63,7 @@ parts:
     after:
       - elixir
       - erlang
-    plugin: make
+    plugin: dump
     # source: https://github.com/rabbitmq/rabbitmq-server.git
     # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
@@ -91,7 +91,7 @@ parts:
 
       CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
-      export DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
@@ -112,7 +112,7 @@ parts:
   elixir:
     after:
       - erlang
-    plugin: make
+    plugin: dump
     source: https://github.com/elixir-lang/elixir.git
     source-tag: v1.13.4
     source-depth: 1
@@ -124,10 +124,13 @@ parts:
 
       CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
+      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
+      export PREFIX=/usr
+
       make clean
       make -j ${CPU_COUNT}
       # make -j ${CPU_COUNT} test
-      make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      make install
 
       echo "Finished at $(date)"
       END_TIME=$(date +%s)
@@ -136,11 +139,12 @@ parts:
       - usr
 
   erlang:
-    plugin: autotools
+    plugin: dump
     source: https://github.com/erlang/otp.git
     source-tag: OTP-23.2.7.5
     source-depth: 1
     build-packages:
+      - autoconf
       - fop
       - libssl-dev
       - libncurses5-dev
@@ -160,11 +164,13 @@ parts:
 
       CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
 
+      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
+
       ./otp_build autoconf
       ./configure --prefix=/usr
 
       make -j ${CPU_COUNT}
-      make install DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      make install
 
       sed --in-place \
         --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
