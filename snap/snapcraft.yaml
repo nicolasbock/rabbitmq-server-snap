@@ -1,5 +1,5 @@
 name: rabbitmq-server-snap
-base: core20
+base: core22
 version: '3.8.35'
 summary: AMQP server written in Erlang
 description: |
