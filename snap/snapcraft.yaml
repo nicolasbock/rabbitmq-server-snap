@@ -141,7 +141,7 @@ parts:
   erlang:
     plugin: dump
     source: https://github.com/erlang/otp.git
-    source-tag: OTP-23.2.7.5
+    source-tag: OTP-24.3.4.2
     source-depth: 1
     build-packages:
       - autoconf
@@ -166,26 +166,26 @@ parts:
 
       export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
 
-      ./otp_build autoconf
+      ./otp_build update_configure
       ./configure --prefix=/usr
 
       make -j ${CPU_COUNT}
       make install
 
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/start
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/erl
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/start
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
 
       echo "Finished building erlang at $(date)"
