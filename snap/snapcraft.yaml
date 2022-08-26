@@ -107,7 +107,7 @@ parts:
     source-tag: v1.13.4
     source-depth: 1
     make-parameters:
-      - PREFIX=/usr
+      - test PREFIX=/usr
     override-build: |
       echo "Starting to build elixir at $(date)"
       START_TIME=$(date +%s)
