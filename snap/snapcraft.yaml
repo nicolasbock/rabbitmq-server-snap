@@ -102,23 +102,17 @@ parts:
   elixir:
     after:
       - erlang
-    plugin: dump
+    plugin: make
     source: https://github.com/elixir-lang/elixir.git
     source-tag: v1.13.4
     source-depth: 1
+    make-parameters:
+      - PREFIX=/usr
     override-build: |
-      set -e -u -x
-
       echo "Starting to build elixir at $(date)"
       START_TIME=$(date +%s)
 
-      export DESTDIR="${SNAPCRAFT_PART_INSTALL}"
-      export PREFIX=/usr
-
-      make clean
-      # make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}
-      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} test
-      make install
+      snapcraftctl build
 
       echo "Finished building elixir at $(date)"
       END_TIME=$(date +%s)
