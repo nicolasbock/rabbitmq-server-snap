@@ -1,5 +1,5 @@
 name: rabbitmq-server-snap
-base: core18
+base: core22
 version: '3.8.35'
 summary: AMQP server written in Erlang
 description: |
@@ -13,18 +13,11 @@ contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
 architectures:
-  - build-on: [amd64]
-    run-on: [amd64]
-  - build-on: [i386]
-    run-on: [i386]
-  - build-on: [arm64]
-    run-on: [arm64]
-  - build-on: [armhf]
-    run-on: [armhf]
-  - build-on: [ppc64el]
-    run-on: [ppc64el]
-  - build-on: [s390x]
-    run-on: [s390x]
+  - arm64
+  - armhf
+  - amd64
+  - ppc64el
+  - s390x
 grade: stable
 confinement: strict
 
@@ -63,14 +56,13 @@ parts:
     after:
       - elixir
       - erlang
-    plugin: dump
+    plugin: nil
     # source: https://github.com/rabbitmq/rabbitmq-server.git
     # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
     build-packages:
       - curl
-      - python-all
-      - python-simplejson
+      - python3-simplejson
       - rsync
       - unzip
       - xmlto
@@ -89,9 +81,7 @@ parts:
       echo "Starting to build rabbitmq-server at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
-
-      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
+      export DESTDIR="${SNAPCRAFT_PART_INSTALL}"
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
@@ -100,7 +90,7 @@ parts:
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make -j ${CPU_COUNT} dist manpages
+      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist manpages
       
       make install
       make install-bin
@@ -112,25 +102,17 @@ parts:
   elixir:
     after:
       - erlang
-    plugin: dump
+    plugin: make
     source: https://github.com/elixir-lang/elixir.git
     source-tag: v1.13.4
     source-depth: 1
+    make-parameters:
+      - test PREFIX=/usr
     override-build: |
-      set -e -u -x
-
       echo "Starting to build elixir at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
-
-      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
-      export PREFIX=/usr
-
-      make clean
-      make -j ${CPU_COUNT}
-      # make -j ${CPU_COUNT} test
-      make install
+      snapcraftctl build
 
       echo "Finished building elixir at $(date)"
       END_TIME=$(date +%s)
@@ -139,7 +121,7 @@ parts:
       - usr
 
   erlang:
-    plugin: dump
+    plugin: autotools
     source: https://github.com/erlang/otp.git
     source-tag: OTP-24.3.4.2
     source-depth: 1
@@ -156,21 +138,13 @@ parts:
       - ncurses-base
       - libncurses5
       - libtinfo5
+    autotools-configure-parameters:
+      - --prefix=/usr
     override-build: |
-      set -e -u -x
-
       echo "Starting to build erlang at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
-
-      export DESTDIR="$(readlink --canonicalize ${SNAPCRAFT_PART_INSTALL})"
-
-      ./otp_build update_configure
-      ./configure --prefix=/usr
-
-      make -j ${CPU_COUNT}
-      make install
+      snapcraftctl build
 
       sed --in-place \
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
