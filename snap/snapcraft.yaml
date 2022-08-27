@@ -128,7 +128,7 @@ parts:
   erlang:
     plugin: autotools
     source: https://github.com/erlang/otp.git
-    source-tag: OTP-24.3.4.2
+    source-tag: OTP-24.3.4.3
     source-depth: 1
     build-packages:
       - autoconf
