@@ -62,8 +62,6 @@ parts:
       - elixir
       - erlang
     plugin: nil
-    # source: https://github.com/rabbitmq/rabbitmq-server.git
-    # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
     build-packages:
       - curl
@@ -112,7 +110,8 @@ parts:
     source-tag: v1.13.4
     source-depth: 1
     make-parameters:
-      - test PREFIX=/usr
+      - test
+      - PREFIX=/usr
     override-build: |
       echo "Starting to build elixir at $(date)"
       START_TIME=$(date +%s)
