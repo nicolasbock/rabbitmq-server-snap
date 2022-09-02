@@ -3,9 +3,13 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - v3.6.x
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - v3.6.x
   workflow_dispatch:
 
 jobs:
