@@ -13,18 +13,12 @@ contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
 architectures:
-  - build-on: [amd64]
-    run-on: [amd64]
-  - build-on: [i386]
-    run-on: [i386]
-  - build-on: [arm64]
-    run-on: [arm64]
-  - build-on: [armhf]
-    run-on: [armhf]
-  - build-on: [ppc64el]
-    run-on: [ppc64el]
-  - build-on: [s390x]
-    run-on: [s390x]
+  - build-on: amd64
+  - build-on: i386
+  - build-on: arm64
+  - build-on: armhf
+  - build-on: ppc64el
+  - build-on: s390x
 grade: stable
 confinement: strict
 
@@ -38,8 +32,8 @@ apps:
     daemon: simple
     restart-condition: on-failure
     restart-delay: 10s
-    command: usr/lib/erlang/bin/rabbitmq-server
     stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    command: usr/lib/erlang/bin/rabbitmq-server
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -64,13 +58,10 @@ parts:
       - elixir
       - erlang
     plugin: make
-    # source: https://github.com/rabbitmq/rabbitmq-server.git
-    # source-tag: rabbitmq_v3_6_10
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
     build-packages:
       - curl
-      - python-all
-      - python-simplejson
+      - python3-simplejson
       - rsync
       - unzip
       - xmlto
@@ -86,12 +77,10 @@ parts:
     override-build: |
       set -e -u -x
 
-      echo "Starting at $(date)"
+      echo "Starting to build rabbitmq-server at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
-
-      export DESTDIR=${SNAPCRAFT_PART_INSTALL}
+      export DESTDIR="${SNAPCRAFT_PART_INSTALL}"
       export PREFIX=/usr
       export PYTHON=python3
       export V=1
@@ -100,12 +89,12 @@ parts:
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make -j ${CPU_COUNT} dist manpages
+      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist manpages
       
       make install
       make install-bin
 
-      echo "Finished at $(date)"
+      echo "Finished building rabbitmq-server at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
 
@@ -114,20 +103,18 @@ parts:
       - erlang
     plugin: make
     source: https://github.com/elixir-lang/elixir.git
-    source-tag: v1.5.3
+    source-tag: v1.9.4
     source-depth: 1
+    make-parameters:
+      - test
+      - PREFIX=/usr
     override-build: |
-      set -e -u -x
-
-      echo "Starting at $(date)"
+      echo "Starting to build elixir at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
+      snapcraftctl build
 
-      make -j ${CPU_COUNT} clean test
-      make install PREFIX=/usr DESTDIR=${SNAPCRAFT_PART_INSTALL}
-
-      echo "Finished at $(date)"
+      echo "Finished building elixir at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
     stage:
@@ -150,37 +137,32 @@ parts:
       - ncurses-base
       - libncurses5
       - libtinfo5
+    configflags:
+      - --prefix=/usr
     override-build: |
-      set -e -u -x
-
-      echo "Starting at $(date)"
+      echo "Starting to build erlang at $(date)"
       START_TIME=$(date +%s)
 
-      CPU_COUNT=$(lscpu --parse=CPU | grep -v "^#" | wc -l)
-
       ./otp_build autoconf
-      ./configure --prefix=/usr 2>&1 | tee /root/configure.log
-
-      make -j ${CPU_COUNT} 2>&1 | tee /root/make.log
-      make install DESTDIR=${SNAPCRAFT_PART_INSTALL} 2>&1 | tee /root/make-install.log
+      snapcraftctl build
 
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/start
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/erl
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/start
       sed --in-place \
-        --expression 's:^\(ROOTDIR\)=.*:\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
 
-      echo "Finished at $(date)"
+      echo "Finished building erlang at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
     stage:
