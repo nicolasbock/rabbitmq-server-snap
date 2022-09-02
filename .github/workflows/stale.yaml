@@ -1,0 +1,13 @@
+---
+
+name: Stale
+on:
+  schedule:
+    - cron: '30 0 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close Stale Issues
+        uses: actions/stale@v5
