@@ -125,7 +125,6 @@ parts:
     source-tag: OTP-24.3.4.3
     source-depth: 1
     build-packages:
-      - autoconf
       - fop
       - libssl-dev
       - libncurses5-dev
