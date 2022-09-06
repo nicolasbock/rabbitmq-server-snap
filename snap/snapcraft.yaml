@@ -1,5 +1,5 @@
 name: rabbitmq-server-snap
-base: core18
+base: core20
 version: '3.6.10'
 summary: AMQP server written in Erlang
 description: |
@@ -137,7 +137,7 @@ parts:
       - ncurses-base
       - libncurses5
       - libtinfo5
-    configflags:
+    autotools-configure-parameters:
       - --prefix=/usr
     override-build: |
       echo "Starting to build erlang at $(date)"
