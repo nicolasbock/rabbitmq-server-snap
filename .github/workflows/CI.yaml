@@ -24,7 +24,7 @@ jobs:
         id: snapcraft
       - name: Install rabbitmq-server snap
         run: |
-          sudo snap install --devmode ./rabbitmq-server-snap*.snap
+          sudo snap install --devmode ${{ steps.snapcraft.outputs.snap }}
       - name: Wait for rabbitmq-server to start
         run: |
           set -e -u -x
