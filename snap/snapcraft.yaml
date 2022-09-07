@@ -56,7 +56,7 @@ parts:
     after:
       - elixir
       - erlang
-    plugin: nil
+    plugin: make
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
     build-packages:
       - curl
