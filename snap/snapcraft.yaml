@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core18
-version: '3.6.10'
+version: '3.6.16'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -58,7 +58,7 @@ parts:
       - elixir
       - erlang
     plugin: make
-    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_10/rabbitmq-server_3.6.10.orig.tar.xz
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_16/rabbitmq-server_3.6.16.orig.tar.xz
     build-packages:
       - curl
       - python3-simplejson
