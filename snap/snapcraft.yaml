@@ -32,8 +32,8 @@ apps:
     daemon: simple
     restart-condition: on-failure
     restart-delay: 10s
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
     command: usr/lib/erlang/bin/rabbitmq-server
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
