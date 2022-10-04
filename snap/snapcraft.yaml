@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
-base: core20
-# version: '3.8.35'
+base: core18
+#version: '3.9.23' # 3.9.x
 version: '3.6.16' # 3.6.x
 summary: AMQP server written in Erlang
 description: |
@@ -58,7 +58,7 @@ parts:
       - elixir
       - erlang
     plugin: make
-    # source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
+    #source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.9.23/rabbitmq-server-3.9.23.tar.xz # 3.9.x
     source: https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_16/rabbitmq-server_3.6.16.orig.tar.xz # 3.6.x
     build-packages:
       - curl
@@ -90,8 +90,8 @@ parts:
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist manpages
-      
+      # snapcraftctl build
+      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist
       make install
       make install-bin
 
@@ -104,7 +104,7 @@ parts:
       - erlang
     plugin: make
     source: https://github.com/elixir-lang/elixir.git
-    # source-tag: v1.13.4
+    #source-tag: v1.13.4 # 3.9.x
     source-tag: v1.9.4 # 3.6.x
     source-depth: 1
     make-parameters:
@@ -125,7 +125,7 @@ parts:
   erlang:
     plugin: autotools
     source: https://github.com/erlang/otp.git
-    # source-tag: OTP-24.3.4.3
+    #source-tag: OTP-24.3.4.3 # 3.9.x
     source-tag: OTP-20.3.8.26 # 3.6.x
     source-depth: 1
     build-packages:
@@ -140,7 +140,7 @@ parts:
       - ncurses-base
       - libncurses5
       - libtinfo5
-    autotools-configure-parameters:
+    configflags:
       - --prefix=/usr
     override-build: |
       echo "Starting to build erlang at $(date)"
