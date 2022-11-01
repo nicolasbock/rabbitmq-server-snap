@@ -98,6 +98,13 @@ parts:
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
 
+      exit 0
+    override-prime: |
+      set -e -u -x
+
+      snapcraftctl prime
+      echo "Done priming rabbitmq-server part"
+
   elixir:
     after:
       - erlang
@@ -117,6 +124,11 @@ parts:
       echo "Finished building elixir at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
+    override-prime: |
+      set -e -u -x
+
+      snapcraftctl prime
+      echo "Done priming elixir part"
     stage:
       - usr
 
@@ -165,6 +177,11 @@ parts:
       echo "Finished building erlang at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
+    override-prime: |
+      set -e -u -x
+
+      snapcraftctl prime
+      echo "Done priming erlang part"
     stage:
       - etc
       - lib

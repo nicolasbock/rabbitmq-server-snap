@@ -19,12 +19,35 @@ jobs:
     steps:
       - name: Check out sources
         uses: actions/checkout@v3
-      - name: Build snap
+      - name: Set LXD snap channel
+        run: sudo snap refresh --channel 5.0/stable lxd
+      - name: Get snapcraft source
+        run: |
+          cd ..
+          git config --global user.email 'nicolabock@gmail.com'
+          git config --global user.name 'Nicolas Bock'
+          # git clone --branch test https://github.com/nicolasbock/snapcraft.git
+          git clone https://github.com/snapcore/snapcraft.git
+          cd snapcraft
+          git checkout 6.0.2
+          git tag --annotate --message test v1.0.0
+      - name: Build snapcraft
         uses: snapcore/action-build@v1
+        with:
+          path: ../snapcraft
         id: snapcraft
+      - name: Install test version of snapcraft
+        run: |
+          sudo snap install --dangerous --classic ${{ steps.snapcraft.outputs.snap }}
+      - name: Build snap
+        run: |
+          export SNAPCRAFT_BUILD_ENVIRONMENT=lxd
+          time sg lxd -c 'snapcraft --use-lxd'
+          echo "done building rabbitmq-server snap"
+        id: rabbitmq_snap
       - name: Install rabbitmq-server snap
         run: |
-          sudo snap install --devmode ${{ steps.snapcraft.outputs.snap }}
+          sudo snap install --devmode ${{ steps.rabbitmq_snap.outputs.snap }}
       - name: Wait for rabbitmq-server to start
         run: |
           set -e -u -x
@@ -76,4 +99,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: snap
-          path: ${{ steps.snapcraft.outputs.snap }}
+          path: ${{ steps.rabbitmq_snap.outputs.snap }}
