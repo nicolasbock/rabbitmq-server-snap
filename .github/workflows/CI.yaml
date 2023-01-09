@@ -6,10 +6,16 @@ on:
     branches:
       - main
       - v3.6.x
+      - v3.8.x
+      - v3.9.x
+      - v3.10.x
   pull_request:
     branches:
       - main
       - v3.6.x
+      - v3.8.x
+      - v3.9.x
+      - v3.10.x
   workflow_dispatch:
 
 jobs:
