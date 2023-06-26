@@ -114,6 +114,8 @@ parts:
 
       snapcraftctl build
 
+      pkill epmd
+
       echo "Finished building elixir at $(date)"
       END_TIME=$(date +%s)
       echo "Total time: $((${END_TIME} - ${START_TIME})) seconds"
