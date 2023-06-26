@@ -12,15 +12,12 @@ issues: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
-architectures:
-  - build-on: amd64
-  - build-on: i386
-  - build-on: arm64
-  - build-on: armhf
-  - build-on: ppc64el
-  - build-on: s390x
 grade: stable
 confinement: strict
+
+#layout:
+#  /etc/rabbitmq:
+#    bind: $SNAP_DATA/etc/rabbitmq
 
 plugs:
   log-observe:
@@ -29,11 +26,11 @@ plugs:
 
 apps:
   rabbitmq-server:
-    daemon: simple
-    restart-condition: on-failure
-    restart-delay: 10s
+    #daemon: simple
+    #restart-condition: on-failure
+    #restart-delay: 10s
+    #stop-command: usr/lib/erlang/bin/rabbitmqctl stop
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -43,9 +40,10 @@ parts:
     source: assets
     organize:
       rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
+      rabbitmq-env.conf: etc/rabbitmq/rabbitmq-env.conf
       rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
     stage:
-      - etc/rabbitmq/rabbitmq-defaults
+      - etc/rabbitmq
       - lib/systemd/system/rabbitmq-server.service
 
   # Building rabbitmq-server from git fails because the build script downloads other

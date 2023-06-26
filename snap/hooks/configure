@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e -u
+
+echo "Installing configuration files"
+cp -v ${SNAP}/etc/rabbitmq/* ${SNAP_DATA}/etc/rabbitmq
