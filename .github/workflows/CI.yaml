@@ -21,7 +21,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out sources
         uses: actions/checkout@v3
@@ -30,9 +30,22 @@ jobs:
         with:
           snapcraft-channel: 7.x/stable
         id: snapcraft
+      - name: Store snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snap
+          path: ${{ steps.snapcraft.outputs.snap }}
+
+  functional:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: snap
       - name: Install rabbitmq-server snap
         run: |
-          sudo snap install --devmode ${{ steps.snapcraft.outputs.snap }}
+          sudo snap install --devmode rabbitmq-server*snap
       - name: Wait for rabbitmq-server to start
         run: |
           set -e -u -x
@@ -80,8 +93,3 @@ jobs:
             sleep 2
           done
           (( ${success} == 1 ))
-      - name: Store snap artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: snap
-          path: ${{ steps.snapcraft.outputs.snap }}
