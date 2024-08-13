@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core22
-version: '3.8.35'
+version: '3.9.29'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -12,19 +12,8 @@ issues: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
-architectures:
-  - build-on: amd64
-  - build-on: arm64
-  - build-on: armhf
-  - build-on: ppc64el
-  - build-on: s390x
 grade: stable
 confinement: strict
-
-plugs:
-  log-observe:
-  mount-observe:
-  network-bind:
 
 apps:
   rabbitmq-server:
@@ -33,6 +22,10 @@ apps:
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
     stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    plugs:
+      - log-observe
+      - mount-observe
+      - network-bind
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
 
@@ -57,7 +50,7 @@ parts:
       - elixir
       - erlang
     plugin: make
-    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.9.29/rabbitmq-server-3.9.29.tar.xz
     build-packages:
       - curl
       - python3-simplejson
@@ -76,8 +69,10 @@ parts:
     override-build: |
       set -e -u -x
 
-      echo "Starting to build rabbitmq-server at $(date)"
+      echo "Start building rabbitmq-server at $(date)"
       START_TIME=$(date +%s)
+
+      ps -ef
 
       export DESTDIR="${SNAPCRAFT_PART_INSTALL}"
       export PREFIX=/usr
@@ -88,10 +83,12 @@ parts:
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist manpages
-      
-      make install
-      make install-bin
+      # Because of LP#1987853 we need to run make inside a subshell and provide
+      # it with another stdin.
+      sh -c "yes '' | make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}"
+      sh -c 'yes "" | make install install-bin'
+
+      ps -ef
 
       echo "Finished building rabbitmq-server at $(date)"
       END_TIME=$(date +%s)
@@ -108,10 +105,14 @@ parts:
       - test
       - PREFIX=/usr
     override-build: |
-      echo "Starting to build elixir at $(date)"
+      echo "Start building elixir at $(date)"
       START_TIME=$(date +%s)
 
+      ps -ef
+
       snapcraftctl build
+
+      ps -ef
 
       pkill epmd
 
@@ -141,8 +142,10 @@ parts:
     autotools-configure-parameters:
       - --prefix=/usr
     override-build: |
-      echo "Starting to build erlang at $(date)"
+      echo "Start building erlang at $(date)"
       START_TIME=$(date +%s)
+
+      ps -ef
 
       ./otp_build autoconf
       snapcraftctl build
@@ -162,6 +165,8 @@ parts:
       sed --in-place \
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
+
+      ps -ef
 
       echo "Finished building erlang at $(date)"
       END_TIME=$(date +%s)
