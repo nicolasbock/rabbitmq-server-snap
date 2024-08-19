@@ -17,11 +17,11 @@ confinement: strict
 
 apps:
   rabbitmq-server:
-    daemon: simple
-    restart-condition: on-failure
-    restart-delay: 10s
+    # daemon: simple
+    # restart-condition: on-failure
+    # restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    # stop-command: usr/lib/erlang/bin/rabbitmqctl stop
     plugs:
       - log-observe
       - mount-observe
@@ -30,16 +30,6 @@ apps:
     command: usr/lib/erlang/bin/rabbitmqctl
 
 parts:
-  rabbitmq-support:
-    plugin: dump
-    source: assets
-    organize:
-      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
-      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
-    stage:
-      - etc/rabbitmq/rabbitmq-defaults
-      - lib/systemd/system/rabbitmq-server.service
-
   # Building rabbitmq-server from git fails because the build script downloads other
   # repositories in `deps` and uses the `master` branch of them. This leads to build
   # failures because the Erlang version is not recent enough.
@@ -62,7 +52,7 @@ parts:
     stage-packages:
       - adduser
       - coreutils
-      - libtinfo5
+      # - libtinfo5
       - logrotate
       - lsb-base
       - socat
@@ -82,6 +72,16 @@ parts:
       sed --in-place \
         --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
         deps/rabbit/scripts/rabbitmq-defaults
+
+      sed --in-place \
+        --expression 's:^#!/bin/sh:#!/bin/sh -x:' \
+        deps/rabbit/scripts/rabbitmq-env
+
+      sed --in-place \
+        --expression 's:^#!/bin/sh:#!/bin/bash:' \
+        --expression 's,^set -e.*,set -e -x; export PS4='"'"'+(${BASH_SOURCE##*/}:${LINENO}) ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'"'"',' \
+        --expression 's:exec erl:pwd; exec erl:' \
+        deps/rabbit/scripts/rabbitmq-server
 
       # Because of LP#1987853 we need to run make inside a subshell and provide
       # it with another stdin.
