@@ -109,7 +109,7 @@ parts:
 
       ps -ef
 
-      snapcraftctl build
+      snapcraft build
 
       ps -ef
 
@@ -136,18 +136,23 @@ parts:
     stage-packages:
       - openssl
       - ncurses-base
-    autotools-configure-parameters:
-      - --prefix=/usr
     override-build: |
       echo "Start building erlang at $(date)"
       START_TIME=$(date +%s)
 
       ps -ef
 
-      ./otp_build autoconf
-      snapcraftctl build
+      export ERL_TOP=$(pwd)
+
+      ./configure --prefix=/usr
+      sh -c "yes '' | make"
+      sh -c "yes '' | make release_tests"
+      pushd release/tests/test_server
+      sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
+      popd
 
       sed --in-place \
+        --expression 's:^#!/bin/sh:#!/bin/bash -x:' \
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
       sed --in-place \
@@ -162,6 +167,8 @@ parts:
       sed --in-place \
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
+
+      make install
 
       ps -ef
 
