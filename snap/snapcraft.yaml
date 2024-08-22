@@ -52,7 +52,6 @@ parts:
     stage-packages:
       - adduser
       - coreutils
-      # - libtinfo5
       - logrotate
       - lsb-base
       - socat
@@ -86,7 +85,7 @@ parts:
       # Because of LP#1987853 we need to run make inside a subshell and provide
       # it with another stdin.
       sh -c "yes '' | make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}"
-      sh -c 'yes "" | make install install-bin'
+      sh -c "yes '' | make install install-bin"
 
       ps -ef
 
@@ -137,8 +136,6 @@ parts:
     stage-packages:
       - openssl
       - ncurses-base
-      - libncurses5
-      - libtinfo5
     autotools-configure-parameters:
       - --prefix=/usr
     override-build: |
