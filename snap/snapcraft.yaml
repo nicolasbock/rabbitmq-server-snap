@@ -154,19 +154,19 @@ parts:
 
       sed --in-place \
         --expression 's:^#!/bin/sh:#!/bin/bash -x:' \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/start
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/erl
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/start
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
 
       ps -ef
