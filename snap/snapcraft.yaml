@@ -109,7 +109,7 @@ parts:
 
       ps -ef
 
-      snapcraft build
+      craftctl default
 
       ps -ef
 
@@ -144,7 +144,7 @@ parts:
 
       export ERL_TOP=$(pwd)
 
-      ./configure --prefix=/usr
+      ./configure --prefix=${SNAPCRAFT_PART_INSTALL}/usr
       sh -c 'yes "" | make'
       sh -c 'yes "" | make release_tests'
       pushd release/tests/test_server
