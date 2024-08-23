@@ -168,7 +168,7 @@ parts:
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
 
-      make install
+      sh -c "yes '' | make install"
 
       ps -ef
 
