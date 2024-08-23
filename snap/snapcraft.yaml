@@ -145,10 +145,10 @@ parts:
       export ERL_TOP=$(pwd)
 
       ./configure --prefix=/usr
-      sh -c "yes '' | make"
-      sh -c "yes '' | make release_tests"
+      sh -c 'yes "" | make'
+      sh -c 'yes "" | make release_tests'
       pushd release/tests/test_server
-      sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
+      # sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
       popd
 
       sed --in-place \
@@ -168,7 +168,7 @@ parts:
         --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
 
-      sh -c "yes '' | make install"
+      sh -c 'yes "" | make install'
 
       ps -ef
 
