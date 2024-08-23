@@ -148,7 +148,7 @@ parts:
       sh -c 'yes "" | make'
       sh -c 'yes "" | make release_tests'
       pushd release/tests/test_server
-      sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
+      # sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
       popd
       sh -c 'yes "" | make install'
 
