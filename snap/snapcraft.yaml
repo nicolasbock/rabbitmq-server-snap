@@ -28,6 +28,8 @@ apps:
       - network-bind
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
+  erl:
+    command: usr/bin/erl
 
 parts:
   # Building rabbitmq-server from git fails because the build script downloads other
@@ -86,6 +88,11 @@ parts:
       # it with another stdin.
       sh -c "yes '' | make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}"
       sh -c "yes '' | make install install-bin"
+
+      cat <<EOF > rabbitmq-env.conf
+      ERLANG_COOKIE="${SNAP_COMMON}"
+      EOF
+      install -D --target-directory=${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq rabbitmq-env.conf
 
       ps -ef
 
