@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e -u -x
+
+exec &> >(systemd-cat --identifier rabbitmq-server-snap-configure)
+
+echo "Running configure hook"
+
+if [[ ! -d ${SNAP_COMMON} ]]; then
+  mkdir --parents ${SNAP_COMMON}
+  chmod 755 ${SNAP_COMMON}
+fi
+
+if [[ -f ${SNAP_COMMON}/.erlang.cookie ]]; then
+  chmod 600 ${SNAP_COMMON}/.erlang.cookie
+fi

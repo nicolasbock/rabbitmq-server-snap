@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e -u -x
+
+exec &> >(systemd-cat --identifier rabbitmq-server-snap-install)
+
+echo "Running install hook"

@@ -71,7 +71,7 @@ parts:
       export V=1
 
       sed --in-place \
-        --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
+        --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}\nCONF_ENV_FILE=${SNAP}/etc/rabbitmq/rabbitmq-env.conf:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
       sed --in-place \
@@ -81,7 +81,7 @@ parts:
       sed --in-place \
         --expression 's:^#!/bin/sh:#!/bin/bash:' \
         --expression 's,^set -e.*,set -e -x; export PS4='"'"'+(${BASH_SOURCE##*/}:${LINENO}) ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'"'"',' \
-        --expression 's:exec erl:pwd; exec erl:' \
+        --expression 's:^\(\s*\)exec erl:\1pwd\n\1exec erl:' \
         deps/rabbit/scripts/rabbitmq-server
 
       # Because of LP#1987853 we need to run make inside a subshell and provide
@@ -89,8 +89,9 @@ parts:
       sh -c "yes '' | make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}"
       sh -c "yes '' | make install install-bin"
 
-      cat <<EOF > rabbitmq-env.conf
-      ERLANG_COOKIE="${SNAP_COMMON}"
+      cat <<"EOF" > rabbitmq-env.conf
+      export HOME="${SNAP_COMMON}"
+      export UMASK=077
       EOF
       install -D --target-directory=${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq rabbitmq-env.conf
 
