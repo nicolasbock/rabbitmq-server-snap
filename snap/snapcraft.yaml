@@ -1,6 +1,6 @@
 name: rabbitmq-server-snap
 base: core22
-version: '3.8.35'
+version: '3.9.29'
 summary: AMQP server written in Erlang
 description: |
   RabbitMQ is an implementation of AMQP, the emerging standard for
@@ -12,19 +12,8 @@ issues: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 contact: https://github.com/nicolasbock/rabbitmq-server-snap/issues
 icon: assets/logo.png
 license: Apache-2.0
-architectures:
-  - build-on: amd64
-  - build-on: arm64
-  - build-on: armhf
-  - build-on: ppc64el
-  - build-on: s390x
 grade: stable
 confinement: strict
-
-plugs:
-  log-observe:
-  mount-observe:
-  network-bind:
 
 apps:
   rabbitmq-server:
@@ -32,21 +21,17 @@ apps:
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop_app
+    plugs:
+      - log-observe
+      - mount-observe
+      - network-bind
   rabbitmqctl:
     command: usr/lib/erlang/bin/rabbitmqctl
+  erl:
+    command: usr/bin/erl
 
 parts:
-  rabbitmq-support:
-    plugin: dump
-    source: assets
-    organize:
-      rabbitmq-defaults: etc/rabbitmq/rabbitmq-defaults
-      rabbitmq-server.service: lib/systemd/system/rabbitmq-server.service
-    stage:
-      - etc/rabbitmq/rabbitmq-defaults
-      - lib/systemd/system/rabbitmq-server.service
-
   # Building rabbitmq-server from git fails because the build script downloads other
   # repositories in `deps` and uses the `master` branch of them. This leads to build
   # failures because the Erlang version is not recent enough.
@@ -57,7 +42,7 @@ parts:
       - elixir
       - erlang
     plugin: make
-    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.35/rabbitmq-server-3.8.35.tar.xz
+    source: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.9.29/rabbitmq-server-3.9.29.tar.xz
     build-packages:
       - curl
       - python3-simplejson
@@ -69,15 +54,16 @@ parts:
     stage-packages:
       - adduser
       - coreutils
-      - libtinfo5
       - logrotate
       - lsb-base
       - socat
     override-build: |
       set -e -u -x
 
-      echo "Starting to build rabbitmq-server at $(date)"
+      echo "Start building rabbitmq-server at $(date)"
       START_TIME=$(date +%s)
+
+      ps -ef
 
       export DESTDIR="${SNAPCRAFT_PART_INSTALL}"
       export PREFIX=/usr
@@ -85,13 +71,31 @@ parts:
       export V=1
 
       sed --in-place \
-        --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}:' \
+        --expression 's:^SYS_PREFIX=.*:SYS_PREFIX=${SNAP_COMMON}\nCONF_ENV_FILE=${SNAP}/etc/rabbitmq/rabbitmq-env.conf:' \
         deps/rabbit/scripts/rabbitmq-defaults
 
-      make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT} dist manpages
-      
-      make install
-      make install-bin
+      sed --in-place \
+        --expression 's:^#!/bin/sh:#!/bin/sh -x:' \
+        deps/rabbit/scripts/rabbitmq-env
+
+      sed --in-place \
+        --expression 's:^#!/bin/sh:#!/bin/bash:' \
+        --expression 's,^set -e.*,set -e -x; export PS4='"'"'+(${BASH_SOURCE##*/}:${LINENO}) ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'"'"',' \
+        --expression 's:^\(\s*\)exec erl:\1pwd\n\1exec erl:' \
+        deps/rabbit/scripts/rabbitmq-server
+
+      # Because of LP#1987853 we need to run make inside a subshell and provide
+      # it with another stdin.
+      sh -c "yes '' | make -j ${SNAPCRAFT_PARALLEL_BUILD_COUNT}"
+      sh -c "yes '' | make install install-bin"
+
+      cat <<"EOF" > rabbitmq-env.conf
+      export HOME="${SNAP_COMMON}"
+      export UMASK=077
+      EOF
+      install -D --target-directory=${SNAPCRAFT_PART_INSTALL}/etc/rabbitmq rabbitmq-env.conf
+
+      ps -ef
 
       echo "Finished building rabbitmq-server at $(date)"
       END_TIME=$(date +%s)
@@ -108,10 +112,14 @@ parts:
       - test
       - PREFIX=/usr
     override-build: |
-      echo "Starting to build elixir at $(date)"
+      echo "Start building elixir at $(date)"
       START_TIME=$(date +%s)
 
-      snapcraftctl build
+      ps -ef
+
+      craftctl default
+
+      ps -ef
 
       pkill epmd
 
@@ -136,32 +144,40 @@ parts:
     stage-packages:
       - openssl
       - ncurses-base
-      - libncurses5
-      - libtinfo5
-    autotools-configure-parameters:
-      - --prefix=/usr
     override-build: |
-      echo "Starting to build erlang at $(date)"
+      echo "Start building erlang at $(date)"
       START_TIME=$(date +%s)
 
-      ./otp_build autoconf
-      snapcraftctl build
+      ps -ef
+
+      export ERL_TOP=$(pwd)
+
+      ./configure --prefix=${SNAPCRAFT_PART_INSTALL}/usr
+      sh -c 'yes "" | make'
+      sh -c 'yes "" | make release_tests'
+      pushd release/tests/test_server
+      # sh -c "yes '' | ${ERL_TOP}/bin/erl -s ts install -s ts smoke_test batch -s init stop"
+      popd
+      sh -c 'yes "" | make install'
 
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
+        --expression 's:^#!/bin/sh:#!/bin/bash -x:' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../lib/erlang):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/bin/erl
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/start
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/../..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/../..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/erts-*/bin/erl
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/start
       sed --in-place \
-        --expression 's:^\(\s*ROOTDIR\)="/usr/.*":\1=$(readlink --canonicalize $(dirname $0)/..):' \
+        --expression 's:^\(\s*ROOTDIR\)="/.*$:\1=$(readlink --canonicalize $(dirname $0)/..):' \
         ${SNAPCRAFT_PART_INSTALL}/usr/lib/erlang/bin/erl
+
+      ps -ef
 
       echo "Finished building erlang at $(date)"
       END_TIME=$(date +%s)
