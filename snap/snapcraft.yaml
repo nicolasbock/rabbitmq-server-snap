@@ -21,7 +21,7 @@ apps:
     restart-condition: on-failure
     restart-delay: 10s
     command: usr/lib/erlang/bin/rabbitmq-server
-    stop-command: usr/lib/erlang/bin/rabbitmqctl stop
+    stop-command: usr/lib/erlang/bin/rabbitmqctl stop_app
     plugs:
       - log-observe
       - mount-observe

@@ -5,3 +5,8 @@ set -e -u -x
 exec &> >(systemd-cat --identifier rabbitmq-server-snap-install)
 
 echo "Running install hook"
+
+if [[ ! -d ${SNAP_COMMON} ]]; then
+  mkdir --parents ${SNAP_COMMON}
+  chmod 755 ${SNAP_COMMON}
+fi
